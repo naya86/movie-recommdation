@@ -1,18 +1,35 @@
-from flask import Flask, jsonify, make_response
+from flask import Flask
+from flask_restful import Api
+from config.config import Config
+from flask_jwt_extended import JWTManager
+from resources.user import UserResource
+
 
 app = Flask(__name__)
 
+# 콘픽 환경 설정.
 
-@app.route("/")
-def hello_from_root():
-    return jsonify(message='hihihihihi!')
+app.config.from_object(Config)
+
+# JWT 로그인 환경 설정
+
+jwt = JWTManager(app)
+
+@jwt.token_in_blocklist_loader
+def check_if_token_is_revoked(jwt_header, jwt_payload) :
+    jti = jwt_payload['jti']
+    return jti in jwt_blocklist
+
+# API 설정
+
+api = Api(app)
+
+# 경로 연결
+api.add_resource(UserResource, '/v1/users')
 
 
-@app.route("/hello")
-def hello():
-    return jsonify(message='Hello from path!')
 
 
-@app.errorhandler(404)
-def resource_not_found(e):
-    return make_response(jsonify(error='Not found!'), 404)
+
+if __name__ == '__main__' :
+    app.run()
