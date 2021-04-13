@@ -26,7 +26,7 @@ api = Api(app)
 
 # 경로 연결
 api.add_resource(UserResource, '/v1/users')
-api.add_resource(UserLogin, '/v1/users/login')
+api.add_resource(UserLogin, '/v1/login')
 
 
 

@@ -6,7 +6,7 @@ from mysql.connector import Error
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from db.db import get_mysql_connection
 # 패스워드
-from utils import check_password, hash_password
+from utils import hash_password, check_password
 # 이메일 밸리데이션
 from email_validator import validate_email, EmailNotValidError
 # 로그아웃 기능
@@ -84,45 +84,59 @@ class UserResource(Resource) :
 ## 로그인 API
 
 class UserLogin(Resource) :
-    def post(self) :
-        # 바디 데이터 가져옴
+    # 로그인 API
+    def get(self) :
+        
+        # 1. 데이터가져오기 
         data = request.get_json()
-        # print(data)
-        # 이메일 패스워드 있는지 확인
-        if 'email' not in data or 'password' not in data :
-            return {"err_code" : 1},HTTPStatus.BAD_REQUEST
 
-        # 이메일 형식 체크
-        try :
+        # 2. 이메일 패스워드 있는지 확인.
+        if 'email' not in data or 'password' not in data :
+            return {'err_code' : 1},HTTPStatus.BAD_REQUEST
+
+        # 3. 이메일 밸리데이션 체크
+        try:
+            # Validate.
             validate_email(data['email'])
 
-        except EmailNotValidError as e :
-            return {"err_code" : 2},HTTPStatus.NOT_FOUND
-
-        # 이메일 패스워드 디비랑 맞는지 확인
-        # 디비 데이터 가져오기
-
+            
+        except EmailNotValidError as e:
+            # email is not valid, exception message is human-readable
+            print(str(e))
+            return {'err_code' : 2}, HTTPStatus.NOT_FOUND
+        
+        
+        # 4. 이메일 패스워드 맞는지 확인.
+        # 디비에서 패스워드 가져오기
+        
         connection = get_mysql_connection()
+
         cursor = connection.cursor(dictionary=True)
-        query = """select * from user
-                   where email = %s ;"""
-        param = ( data['email'], )
-        cursor.execute( query, param )
+
+        query = """ select * from user
+                    where email = %s;  """
+
+        param = ( data['email'] , )
+
+        cursor.execute(query, param)
         records = cursor.fetchall()
         print(records)
 
-        # 회원가입이 안된 이메일의 경우 , 응답
-        if len(records) == 0 :
-            return {"err_code" : 3}, HTTPStatus.NOT_ACCEPTABLE
+        # 4-1. 회원가입이 안된 이메일 요청시 rdcords에 데이터가 없다.
+        # 클라이언트에게 응답해줘야한다.
 
-        # 가입이 되어 있는 경우 비밀번호 비교
+        if len(records) == 0 :
+            return {'err_code' : 3}, HTTPStatus.BAD_REQUEST 
+
+        # 5. 위에서 가져온 디비에 저장되어 있는 비밀번호와 클라이언트로부터 받은 비밀번호를
+        # 암호화 한것과 비교.
+
         password = data['password']
         hashed = records[0]['password']
 
-        ret = check_password(password,hashed)
-        print(ret)
+        ret = check_password(password, hashed)
 
-        #  같으면 클라이언트에 리턴
+        # 6. 같으면 클라이언트에 리턴
 
         if ret is True :
             
@@ -132,7 +146,7 @@ class UserLogin(Resource) :
             return {'token' : access_token},HTTPStatus.OK
 
         else :
-            return {'err_code' : 4}, HTTPStatus.METHOD_NOT_ALLOWED 
+            return {'err_code' : 4}, HTTPStatus.BAD_REQUEST
 
 
 
