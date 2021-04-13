@@ -4,7 +4,8 @@ from config.config import Config
 from flask_jwt_extended import JWTManager
 from resources.user import UserResource, UserLogin, UserLogout, jwt_blocklist
 from resources.movie_info import MovieList
-from resources.reviews import ReviewList
+from resources.reviews import ReviewList, NewReview
+from resources.serch import MovieSerch
 
 app = Flask(__name__)
 
@@ -30,8 +31,9 @@ api.add_resource(UserResource, '/v1/users')
 api.add_resource(UserLogin, '/v1/users/login')
 api.add_resource(UserLogout, '/v1/users/logout')
 api.add_resource(MovieList, '/v1/movie/<int:select>/<int:page_num>')
-api.add_resource(ReviewList, '/v1/reviews/<int:movie_id>')
-
+api.add_resource(ReviewList, '/v1/reviews/<int:movie_id>/<int:page_num>')
+api.add_resource(MovieSerch, '/v1/serch')  
+api.add_resource(NewReview, '/v1/reviews/newreview')
 
 if __name__ == '__main__' :
     app.run()
