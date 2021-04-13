@@ -10,7 +10,7 @@ def hash_password(password) :
 
 # 로그인시 체크
 
-def check_password(password, hashed):
+def check_password(password, hashed) :
     return pbkdf2_sha256.verify(password + salt, hashed)
 
     

@@ -26,8 +26,7 @@ class UserResource(Resource) :
 
         # 다 들어왔는지 확인 (email,password,name,gender)
 
-        if 'eamil' not in data or 'password' not in data or 'name' not in data
-            or 'gender' not in data :
+        if 'email' not in data or 'password' not in data or 'name' not in data or 'gender' not in data :
             
             return {"err_code" : 1},HTTPStatus.BAD_REQUEST
 
@@ -58,11 +57,11 @@ class UserResource(Resource) :
             query = """ insert into user(email,password,name,gender)
                     values(%s, %s, %s, %s); """
 
-            param = (data['email'], data['password'], data['name'], data['gender'])
+            param = (data['email'], password, data['name'], data['gender'])
 
             cursor.execute(query, param)
 
-            cursor.commit()
+            connection.commit()
 
             user_id = cursor.lastrowid
             print(user_id)
@@ -79,6 +78,66 @@ class UserResource(Resource) :
         access_token = create_access_token(identity=user_id)
 
         return {"token" : access_token}, HTTPStatus.OK
+
+
+
+## 로그인 API
+
+class UserLogin(Resource) :
+    def post(self) :
+        # 바디 데이터 가져옴
+        data = request.get_json()
+        # print(data)
+        # 이메일 패스워드 있는지 확인
+        if 'email' not in data or 'password' not in data :
+            return {"err_code" : 1},HTTPStatus.BAD_REQUEST
+
+        # 이메일 형식 체크
+        try :
+            validate_email(data['email'])
+
+        except EmailNotValidError as e :
+            return {"err_code" : 2},HTTPStatus.NOT_FOUND
+
+        # 이메일 패스워드 디비랑 맞는지 확인
+        # 디비 데이터 가져오기
+
+        connection = get_mysql_connection()
+        cursor = connection.cursor(dictionary=True)
+        query = """select * from user
+                   where email = %s ;"""
+        param = ( data['email'], )
+        cursor.execute( query, param )
+        records = cursor.fetchall()
+        print(records)
+
+        # 회원가입이 안된 이메일의 경우 , 응답
+        if len(records) == 0 :
+            return {"err_code" : 3}, HTTPStatus.NOT_ACCEPTABLE
+
+        # 가입이 되어 있는 경우 비밀번호 비교
+        password = data['password']
+        hashed = records[0]['password']
+
+        ret = check_password(password,hashed)
+        print(ret)
+
+        #  같으면 클라이언트에 리턴
+
+        if ret is True :
+            
+            user_id = records[0]['id']
+            access_token = create_access_token(identity=user_id)
+
+            return {'token' : access_token},HTTPStatus.OK
+
+        else :
+            return {'err_code' : 4}, HTTPStatus.METHOD_NOT_ALLOWED 
+
+
+
+
+
 
 
 

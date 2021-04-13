@@ -2,7 +2,7 @@ from flask import Flask
 from flask_restful import Api
 from config.config import Config
 from flask_jwt_extended import JWTManager
-from resources.user import UserResource
+from resources.user import UserResource, UserLogin
 
 
 app = Flask(__name__)
@@ -26,7 +26,7 @@ api = Api(app)
 
 # 경로 연결
 api.add_resource(UserResource, '/v1/users')
-
+api.add_resource(UserLogin, '/v1/users/login')
 
 
 
