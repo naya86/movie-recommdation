@@ -3,7 +3,7 @@ from flask import request
 from flask_restful import Resource
 from http import HTTPStatus
 from mysql.connector import Error
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
 from db.db import get_mysql_connection
 # 패스워드
 from utils import hash_password, check_password
@@ -85,7 +85,7 @@ class UserResource(Resource) :
 
 class UserLogin(Resource) :
     # 로그인 API
-    def get(self) :
+    def post(self) :
         
         # 1. 데이터가져오기 
         data = request.get_json()
@@ -147,6 +147,19 @@ class UserLogin(Resource) :
 
         else :
             return {'err_code' : 4}, HTTPStatus.BAD_REQUEST
+
+
+
+## 로그아웃 API 만들기
+
+class UserLogout(Resource) :
+    @jwt_required()
+    def post(selt) :
+        
+        jti = get_jwt()['jti']
+        jwt_blocklist.add(jti)
+
+        return {'message' : 'Log Out'},HTTPStatus.OK
 
 
 

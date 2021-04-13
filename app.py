@@ -2,8 +2,9 @@ from flask import Flask
 from flask_restful import Api
 from config.config import Config
 from flask_jwt_extended import JWTManager
-from resources.user import UserResource, UserLogin
-
+from resources.user import UserResource, UserLogin, UserLogout, jwt_blocklist
+from resources.movie_info import MovieList
+from resources.reviews import ReviewList
 
 app = Flask(__name__)
 
@@ -26,9 +27,10 @@ api = Api(app)
 
 # 경로 연결
 api.add_resource(UserResource, '/v1/users')
-api.add_resource(UserLogin, '/v1/login')
-
-
+api.add_resource(UserLogin, '/v1/users/login')
+api.add_resource(UserLogout, '/v1/users/logout')
+api.add_resource(MovieList, '/v1/movie/<int:select>/<int:page_num>')
+api.add_resource(ReviewList, '/v1/reviews/<int:movie_id>')
 
 
 if __name__ == '__main__' :
