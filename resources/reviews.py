@@ -52,7 +52,7 @@ class NewReview(Resource) :
         if "item_id" not in data or "rating" not in data :
             return {"message" : "No data has been entered."}.HTTPStatus.BAD_REQUEST
 
-        # 리뷰 작성자 추가를 위해 유저아이디 값 가져오기. (토큰)
+        # 유저 확인 위해 유저아이디 값 가져오기. (토큰)
 
         user_id = get_jwt_identity() # 토큰 저장.
 

@@ -16,7 +16,7 @@ from flask_jwt_extended import get_jti
 jwt_blocklist = set()
 
 
-
+## 회원가입
 class UserResource(Resource) :
     def post(self) :
         
@@ -154,7 +154,7 @@ class UserLogin(Resource) :
 
 class UserLogout(Resource) :
     @jwt_required()
-    def post(selt) :
+    def post(self) :
         
         jti = get_jwt()['jti']
         jwt_blocklist.add(jti)
@@ -162,7 +162,64 @@ class UserLogout(Resource) :
         return {'message' : 'Log Out'},HTTPStatus.OK
 
 
+## 내 정보 가져오기 API
 
+class UserInformation(Resource) :
+    @jwt_required()
+    def get(self) :
+
+        # 로그인한 유저 아이디 가져오기
+        user_id = get_jwt_identity()
+
+        # 데이터 정보가져오기
+
+        connection = get_mysql_connection()
+
+        cursor = connection.cursor(dictionary=True)
+
+        query = """ select email, name, gender 
+                    from user
+                    where id = %s; """
+
+        param = (user_id,)
+
+        cursor.execute(query, param)
+        user_info = cursor.fetchall()
+        #print(user_info)
+
+        if len(user_info) == 0 :
+            return {"message" : "No user information"}
+
+        query = """ select title, rating
+                    from movie as m
+                    join rating as r
+                        on m.id = r.item_id
+                    join user as u
+                        on u.id = r.user_id
+                    where u.id = %s; """
+
+        param = (user_id,)
+
+        cursor.execute(query,param)
+        review_info = cursor.fetchall()
+        #print(review_info)
+
+        if len(review_info) == 0 :
+            review_info = "No review information"
+            
+            # return {"message" : "No review information"}
+
+        return {"user_info" : user_info, "review_info" : review_info}
+        
+
+
+
+        
+        
+
+        
+
+                 
 
 
 

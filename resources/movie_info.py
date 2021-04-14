@@ -10,8 +10,11 @@ import numpy as np
 
 #영화 정보
 class MovieList(Resource) :
-    def get(self,select,page_num):
-
+    def get(self):
+        
+        #쿼리스트링 가져오기
+        data = request.args()   
+        print(data)
         connection = get_mysql_connection()
 
         cursor = connection.cursor(dictionary=True)
@@ -26,16 +29,7 @@ class MovieList(Resource) :
                         group by m.title
                         order by reviews_counts desc limit %s, 25;  """
 
-        #     param = ( (page_num - 1)*25 , )
-
-        #     cursor.execute( query, param )
-        #     records = cursor.fetchall()
-        #     print(records)
-
-        #     cursor.close()
-        #     connection.close()
-                       
-        # return {"count" : len(records),"ret" : records}
+        
             
         
         # 2면 별점 평균 내림차순
@@ -86,7 +80,7 @@ class Movie_recom(Resource) :
         
         cursor.execute(query, param)
         myRatings = cursor.fetchall()
-        #print(myRatings)
+        print(myRatings)
 
         cursor.close()
         connection.close()
@@ -108,14 +102,25 @@ class Movie_recom(Resource) :
             similar_movie['Weight'] = similar_movie['Correlation'] * myRatings[i]['Ratings']
             similar_movies_list =  similar_movies_list.append(similar_movie)
         
+        # 내가 별점 준 영화는 빼자.
+        similar_movies_list = similar_movies_list.reset_index()
+        
+        # print(similar_movies_list.loc[similar_movies_list['title'] != myRatings[1]['Movie Name'], ])
+        for i in np.arange(0, len(myRatings)) :
+            similar_movies_list = similar_movies_list.loc[similar_movies_list['title'] != myRatings[i]['Movie Name'], ]
 
+        #print(similar_movies_list)
+
+
+        # 확인결과 영화명이 같은 데이터가 나올 수 있음. 그 중 weight높은 값으로 하나만 남기기.
         final_recom = similar_movies_list.groupby('title')['Weight'].max().sort_values(ascending=False).reset_index()
+
         final_recom['Weight'] = round(final_recom['Weight'],1)
-        final_recom_10 = final_recom.head(10).to_dict('records')
+        final_recom = final_recom.head(10).to_dict('records')
         
-        print(final_recom_10)
+        print(final_recom)
         
-        return {"count" : len(final_recom_10), "ret" : final_recom_10}
+        return {"count" : len(final_recom), "ret" : final_recom}
         
 
 
