@@ -18,9 +18,9 @@ class MovieSerch(Resource) :
         offset = int(data['offset'])
         limit  = int(data['limit'])
         keyword = data['keyword']
-        print(offset)
-        print(limit)
-        print(keyword)
+        # print(offset)
+        # print(limit)
+        # print(keyword)
 
         # 데이터베이스에서 비교
         
@@ -37,18 +37,18 @@ class MovieSerch(Resource) :
                     having title like %s limit %s, %s; """
         
         param = ('%'+keyword+'%', offset, limit)
-        print(param)
+        # print(param)
         cursor.execute( query, param)
         records = cursor.fetchall()
-        print(records)
+        # print(records)
 
-        if records == [] : 
-            return {"message" : "There is no movie."},HTTPStatus.NO_CONTENT
+        if len(records) == 0 :
+            
+            return{'err_code' : 1}, HTTPStatus.BAD_REQUEST
 
-        # else :
-        #     return {"count" : len(records), "ret" : records}
+        else :
+            return {"count" : len(records), "ret" : records}
         
-
 
 
 

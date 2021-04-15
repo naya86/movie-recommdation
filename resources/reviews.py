@@ -40,6 +40,10 @@ class ReviewList(Resource) :
 
         cursor.close()
         connection.close()
+
+        # 영화 리뷰 정보가 없을시
+        if len(records) == 0 :
+            return {"err_code" : 1},HTTPStatus.BAD_REQUEST
         
         return {"count" : len(records),"ret" : records}    
 
@@ -55,7 +59,7 @@ class NewReview(Resource) :
 
         # 바디데이터 받기 ( 영화 아이디값 , 별점 )
         data = request.get_json()
-
+        
         # 데이터 체크
         if "item_id" not in data or "rating" not in data :
             return {"message" : "No data has been entered."}.HTTPStatus.BAD_REQUEST
@@ -64,25 +68,53 @@ class NewReview(Resource) :
 
         user_id = get_jwt_identity() # 토큰 저장.
 
-        # 디비 연결
+        # 디비 연결 (리뷰정보에 이미 내가 썼나 확인.)
 
         connection = get_mysql_connection()
         cursor = connection.cursor()
 
-        query = """ insert into rating (item_id, rating, user_id)
-                    values (%s,%s,%s); """
+        query = """ select * from rating
+                    where item_id=%s and user_id = %s; """
+        param = (data['item_id'], user_id)
 
-        param = (data['item_id'], data['rating'], user_id)
+        cursor.execute(query, param)
+        records = cursor.fetchall()          
+        print(records)  
 
-        cursor.execute( query, param)
+        # 이미 데이터가 있을 때. ( 이미 리뷰 작성했을 때)
+        if len(records) !=0 :
+            return {"message" : "Reviews already written"}, HTTPStatus.METHOD_NOT_ALLOWED
+
         
-        connection.commit()
+        # 리뷰 작성한 적 없으면 리뷰 저장.
+        else :
+            query = """ insert into rating (item_id, rating, user_id)
+                        values (%s,%s,%s); """
+            param = (data['item_id'], data['rating'],user_id)
 
-        cursor.close()
-        connection.close()
+            cursor.execute(query, param)
+            connection.commit()
 
-        return {"message" : "Complited a new review."},HTTPStatus.OK
+            cursor.close()
+            connection.close()
 
+            return {"message" : "Complited a new review."},HTTPStatus.OK
+
+
+
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+
+       
 
 
 

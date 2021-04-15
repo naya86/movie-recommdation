@@ -126,7 +126,7 @@ class UserLogin(Resource) :
         # 클라이언트에게 응답해줘야한다.
 
         if len(records) == 0 :
-            return {'err_code' : 3}, HTTPStatus.BAD_REQUEST 
+            return {'err_code' : 3}, HTTPStatus.METHOD_NOT_ALLOWED 
 
         # 5. 위에서 가져온 디비에 저장되어 있는 비밀번호와 클라이언트로부터 받은 비밀번호를
         # 암호화 한것과 비교.
@@ -146,7 +146,7 @@ class UserLogin(Resource) :
             return {'token' : access_token},HTTPStatus.OK
 
         else :
-            return {'err_code' : 4}, HTTPStatus.BAD_REQUEST
+            return {'err_code' : 4}, HTTPStatus.NOT_ACCEPTABLE
 
 
 
@@ -188,7 +188,7 @@ class UserInformation(Resource) :
         #print(user_info)
 
         if len(user_info) == 0 :
-            return {"message" : "No user information"}
+            return {"message" : "No user information"},HTTPStatus.BAD_REQUEST
 
         query = """ select title, rating
                     from movie as m
@@ -209,7 +209,7 @@ class UserInformation(Resource) :
             
             # return {"message" : "No review information"}
 
-        return {"user_info" : user_info, "review_info" : review_info}
+        return {"user_info" : user_info, "review_info" : review_info},HTTPStatus.OK
         
 
 
