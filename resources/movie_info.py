@@ -8,49 +8,96 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 import pandas as pd
 import numpy as np
 
-#영화 정보
+#영화 목록 정렬
 class MovieList(Resource) :
     def get(self):
         
         #쿼리스트링 가져오기
-        data = request.args()   
-        print(data)
+        data = request.args.to_dict()   
+        # print(data)
+
+        # offset , limit , order 변수로 받자
+        
+        offset = int(data['offset'])
+        limit = int(data['limit'])
+        order = data['order']
+        # print(offset)
+        # print(limit)
+        # print(order)
+        
+        # 디비에서 데이터 받기
         connection = get_mysql_connection()
 
         cursor = connection.cursor(dictionary=True)
 
-        # 1이면 리뷰 수 내림차순
-        if select == 1 :
+        # order == reviews_counts 이면 리뷰 수 내림차순
+        if order == 'reviews_counts' :
         
             query = """ select title,  count(user_id) as reviews_counts, round(avg(rating),1) as average_rating 
                         from movie as m
                         left join rating as r
                             on m.id = r.item_id 
                         group by m.title
-                        order by reviews_counts desc limit %s, 25;  """
+                        order by reviews_counts desc limit %s, %s;  """
 
-        
-            
-        
-        # 2면 별점 평균 내림차순
-        elif select == 2 :
+                
+        # order=average_rating 이면 별점 평균 내림차순
+        elif order == 'average_rating' :
+             
             query = """ select title,  count(user_id) as reviews_counts, round(avg(rating),1) as average_rating 
                         from movie as m
                         left join rating as r
                             on m.id = r.item_id 
                         group by m.title
-                        order by average_rating desc limit %s, 25;  """
+                        order by average_rating desc limit %s, %s;  """
 
-        param = ( (page_num - 1)*25 , )
-
+        param = (offset, limit )
         cursor.execute( query, param )
         records = cursor.fetchall()
         print(records)
-
+        
         cursor.close()
         connection.close()
         
         return {"count" : len(records),"ret" : records} 
+
+
+
+# 영화 검색 API       (  get 으로 다시 해야됨. )
+
+class MovieSerch(Resource) :
+    # 검색하는 영화명을 받아야하니까 post? 
+    def post(self) :
+    
+    # 바디에서 데이터 가져오기. 
+        data = request.get_json()
+        #print(data)
+
+        if "title" not in data :
+            return {"message" : "No title has been entered."}.HTTPStatus.BAD_REQUEST
+        
+        connection = get_mysql_connection()
+
+        cursor = connection.cursor(dictionary=True)
+
+        query = """ select title, count(*) as reviews_counts, 
+                    round(avg(rating),1) as average_rating 
+                    from movie as m
+                    join rating as r
+                        on m.id = r.item_id
+                    group by title 
+                    having title like %s; """
+        
+        param = ('%'+ data['title'] + '%',)
+        cursor.execute( query, param)
+        records = cursor.fetchall()
+        print(records)
+
+        if len(records) == 0 :
+            return {"message" : "There is no movie."},HTTPStatus.NO_CONTENT
+
+        else :
+            return {"count" : len(records), "ret" : records}
 
 
 
