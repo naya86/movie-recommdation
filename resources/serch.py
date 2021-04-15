@@ -6,41 +6,47 @@ from mysql.connector import Error
 from db.db import get_mysql_connection
 
 
-# # 영화 검색 API
+# 영화 검색 API
 
-# class MovieSerch(Resource) :
-#     # 검색하는 영화명을 받아야하니까 post? 
-#     def post(self) :
+class MovieSerch(Resource) :
     
-#     # 바디에서 데이터 가져오기. 
-#         data = request.get_json()
-#         #print(data)
+    def get(self) : #쿼리파라미터 (offset, limit, keyword)
+    
+        # 쿼리에서 데이터 가져오기. 
+        data = request.args.to_dict()
+        #print(data)
+        offset = int(data['offset'])
+        limit  = int(data['limit'])
+        keyword = data['keyword']
+        print(offset)
+        print(limit)
+        print(keyword)
 
-#         if "title" not in data :
-#             return {"message" : "No title has been entered."}.HTTPStatus.BAD_REQUEST
+        # 데이터베이스에서 비교
         
-#         connection = get_mysql_connection()
+        connection = get_mysql_connection()
 
-#         cursor = connection.cursor(dictionary=True)
+        cursor = connection.cursor(dictionary=True)
 
-#         query = """ select title, count(*) as reviews_counts, 
-#                     round(avg(rating),1) as average_rating 
-#                     from movie as m
-#                     join rating as r
-#                         on m.id = r.item_id
-#                     group by title 
-#                     having title like %s; """
+        query = """ select title, count(*) as reviews_counts, 
+                    round(avg(rating),1) as average_rating 
+                    from movie as m
+                    join rating as r
+                        on m.id = r.item_id
+                    group by title 
+                    having title like %s limit %s, %s; """
         
-#         param = ('%'+ data['title'] + '%',)
-#         cursor.execute( query, param)
-#         records = cursor.fetchall()
-#         print(records)
+        param = ('%'+keyword+'%', offset, limit)
+        print(param)
+        cursor.execute( query, param)
+        records = cursor.fetchall()
+        print(records)
 
-#         if len(records) == 0 :
-#             return {"message" : "There is no movie."},HTTPStatus.NO_CONTENT
+        if records == [] : 
+            return {"message" : "There is no movie."},HTTPStatus.NO_CONTENT
 
-#         else :
-#             return {"count" : len(records), "ret" : records}
+        # else :
+        #     return {"count" : len(records), "ret" : records}
         
 
 

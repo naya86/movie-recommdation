@@ -3,8 +3,9 @@ from flask_restful import Api
 from config.config import Config
 from flask_jwt_extended import JWTManager
 from resources.user import UserResource, UserLogin, UserLogout, jwt_blocklist,UserInformation
-from resources.movie_info import MovieList, Movie_recom, MovieSerch
-from resources.reviews import ReviewList, NewReview
+from resources.movie_info import MovieList, Movie_recom
+from resources.reviews import ReviewList#, NewReview
+from resources.serch import MovieSerch
 
 
 app = Flask(__name__)
@@ -30,10 +31,17 @@ api = Api(app)
 api.add_resource(UserResource, '/v1/users/register')
 api.add_resource(UserLogin, '/v1/users/login')
 api.add_resource(UserLogout, '/v1/users/logout')
-api.add_resource(MovieList, '/v1/movie')          # order = reviews_counts   ,   average_rating
-api.add_resource(ReviewList, '/v1/reviews/<int:movie_id>/<int:page_num>')
+api.add_resource(MovieList, '/v1/movie')   
+#MoavieList 쿼리파라미터 (offset, limit, order)
+# order = reviews_counts   ,   average_rating
+
+api.add_resource(ReviewList, '/v1/reviews')
+#ReviewList 쿼리파라미터 (movie_id, offset, limit)
+
 api.add_resource(MovieSerch, '/v1/movie/search')  
-api.add_resource(NewReview, '/v1/reviews/newreview')
+#MovieSerch 쿼리파라미터 (offset, limit, keyword)
+
+# api.add_resource(NewReview, '/v1/reviews/newreview')
 api.add_resource(Movie_recom, '/v1/movierecommandation')
 api.add_resource(UserInformation, '/v1/users/me')
 

@@ -10,7 +10,15 @@ from flask_jwt_extended import get_jwt_identity, jwt_required
 
 
 class ReviewList(Resource) :
-    def get(self, movie_id, page_num) :
+    def get(self) : # 쿼리파마미터 (movie_id, offset, limit)
+        
+        # 쿼리파라미터 값 가져오기
+        data = request.args.to_dict()
+        #print(data)
+        movie_id = int(data['movie_id'])
+        offset = int(data['offset'])
+        limit = int(data['limit'])
+        
         
         # 디비에서 데이터 가져오기
         connection = get_mysql_connection()
@@ -22,13 +30,13 @@ class ReviewList(Resource) :
 	                   on m.id = r.item_id
                     left join user as u
 	                   on u.id = r.user_id
-                    where m.id = %s limit %s,25 ; """
+                    where m.id = %s limit %s,%s ; """
 
-        param = ( movie_id, (page_num - 1)*25 )
+        param = ( movie_id, offset, limit )
         
         cursor.execute(query, param)
         records = cursor.fetchall()
-        print( records )
+        # print( records )
 
         cursor.close()
         connection.close()
