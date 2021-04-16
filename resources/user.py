@@ -188,7 +188,7 @@ class UserInformation(Resource) :
         #print(user_info)
 
         if len(user_info) == 0 :
-            return {"message" : "No user information"},HTTPStatus.BAD_REQUEST
+            return {"err_code" : 1},HTTPStatus.BAD_REQUEST
 
         query = """ select title, rating
                     from movie as m

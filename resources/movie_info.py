@@ -89,13 +89,13 @@ class Movie_recom(Resource) :
         
         cursor.execute(query, param)
         myRatings = cursor.fetchall()
-        print(myRatings)
+        # print(myRatings)
 
         cursor.close()
         connection.close()
 
         if len(myRatings) == 0 :
-            return {"message" : "No reviews data"},HTTPStatus.BAD_REQUEST
+            return {"err_code" : 1},HTTPStatus.BAD_REQUEST
 
         # 영화 상관관계 csv 파일 불러오기
         movie_correlations = pd.read_csv('movie_correlations.csv', index_col=0)
@@ -127,7 +127,7 @@ class Movie_recom(Resource) :
         final_recom['Weight'] = round(final_recom['Weight'],1)
         final_recom = final_recom.head(10).to_dict('records')
         
-        print(final_recom)
+        # print(final_recom)
         
         return {"count" : len(final_recom), "ret" : final_recom},HTTPStatus.OK
         

@@ -44,14 +44,14 @@ class ReviewList(Resource) :
         # 영화 리뷰 정보가 없을시
         if len(records) == 0 :
             return {"err_code" : 1},HTTPStatus.BAD_REQUEST
-        
-        return {"count" : len(records),"ret" : records}    
+        else:
+            return {"count" : len(records),"ret" : records}    
 
 
+    
+    
     # 새로운 리뷰 만들기 API
     # 리뷰는 로그인 필요
-    
-    
     
 class NewReview(Resource) :  
     @jwt_required()  
@@ -62,7 +62,7 @@ class NewReview(Resource) :
         
         # 데이터 체크
         if "item_id" not in data or "rating" not in data :
-            return {"message" : "No data has been entered."}.HTTPStatus.BAD_REQUEST
+            return {"err_code" : 1}.HTTPStatus.BAD_REQUEST
 
         # 유저 확인 위해 유저아이디 값 가져오기. (토큰)
 
@@ -79,11 +79,11 @@ class NewReview(Resource) :
 
         cursor.execute(query, param)
         records = cursor.fetchall()          
-        print(records)  
+        # print(records)  
 
         # 이미 데이터가 있을 때. ( 이미 리뷰 작성했을 때)
         if len(records) !=0 :
-            return {"message" : "Reviews already written"}, HTTPStatus.METHOD_NOT_ALLOWED
+            return {"err_code" : 2}, HTTPStatus.METHOD_NOT_ALLOWED
 
         
         # 리뷰 작성한 적 없으면 리뷰 저장.

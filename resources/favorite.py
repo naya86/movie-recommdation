@@ -37,7 +37,7 @@ class Favorite(Resource) :
 
         # 이미 해당 영화에 이미 내 즐겨찾기에 있을 경우 ( 데이터가 이미 있음. )
         if len(records) != 0 :
-            return {"message" : "Movie saved already"},HTTPStatus.BAD_REQUEST
+            return {"err_code" : 1},HTTPStatus.BAD_REQUEST
 
         
         # 없을 경우 저장.
@@ -79,15 +79,16 @@ class Favorite(Resource) :
         #print(records)
         
         # 즐겨찾기에 없으면 삭제할 데이터가 없음.
+        
         if len(records) == 0 :
-            return {"message": 'There are no favorites to delete.'},HTTPStatus.BAD_REQUEST
+            return {"err_code" : 1 },HTTPStatus.BAD_REQUEST
         
         # 내가 저장한 즐겨찾기 맞는지 다시 확인.
         favorite_user_id = records[0]['user_id']
         # print(favorite_user_id)
 
         if user_id != favorite_user_id :
-            return {"message" : "different user"},HTTPStatus.METHOD_NOT_ALLOWED
+            return {"err_code" : 2},HTTPStatus.METHOD_NOT_ALLOWED
 
         # 맞으면 삭제
         query = """ delete from favorite
@@ -102,7 +103,7 @@ class Favorite(Resource) :
         connection.close()
 
         return {"message" : "Delete OK!"},HTTPStatus.OK
-
+        
         
 # 내 즐겨찾기 가져오는 API
 # 로그인 필요
@@ -138,7 +139,7 @@ class MyFavorite(Resource):
 
         # records값이 없으면 즐겨찾기 해놓은 것이 없다.
         if len(records) == 0 :
-            return {"message" :'There are no favorites'},HTTPStatus.BAD_REQUEST
+            return {"err_cord" : 1},HTTPStatus.BAD_REQUEST
 
         # 값이 있으면 출력.
         else :
