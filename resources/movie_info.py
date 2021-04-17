@@ -128,6 +128,9 @@ class Movie_recom(Resource) :
         final_recom = final_recom.head(10).to_dict('records')
         
         # print(final_recom)
+
+        if len(final_recom) == 0 :
+            return {"err_code" : "2"},HTTPStatus.METHOD_NOT_ALLOWED
         
         return {"count" : len(final_recom), "ret" : final_recom},HTTPStatus.OK
         
