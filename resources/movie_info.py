@@ -58,7 +58,8 @@ class MovieList(Resource) :
         
         cursor.close()
         connection.close()
-        
+
+                
         return {"count" : len(records),"ret" : records} 
 
 
