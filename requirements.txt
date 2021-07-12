@@ -7,3 +7,4 @@ email-validator
 Flask-JWT-Extended
 pandas
 numpy
+Werkzeug==1.0.0
